@@ -1,17 +1,22 @@
 package com.manajemengym.kel1;
 
 import com.manajemengym.kel1.util.Koneksi;
+import com.manajemengym.kel1.view.FormInstruktur;
+import com.manajemengym.kel1.view.FormJadwalKelas;
 import com.manajemengym.kel1.view.FormMember;
-
 
 public class Main {
     public static void main(String[] args) {
-        // Coba koneksi
+
+        // Test koneksi
         Koneksi.getConnection();
 
+        // Jalankan form yang kamu mau
         new FormMember();
+        new FormInstruktur();
+        new FormJadwalKelas();
 
-        // Nanti di sini kamu bisa buka form pertama
+
         System.out.println("App is running...");
     }
 }
