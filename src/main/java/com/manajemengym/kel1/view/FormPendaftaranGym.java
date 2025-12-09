@@ -60,7 +60,7 @@ public class FormPendaftaranGym extends JFrame {
         txtCatatan.setBounds(150, 140, 200, 25);
         add(txtCatatan);
 
-        JButton btnSimpan = new JButton("Simpan");
+        JButton btnSimpan = new JButton("Save");
         btnSimpan.setBounds(20, 190, 90, 30);
         add(btnSimpan);
 
