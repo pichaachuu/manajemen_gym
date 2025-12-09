@@ -92,6 +92,32 @@ public class FormJadwalKelas extends JFrame {
         setVisible(true);
     }
 
+    // ===============================================================
+    // VALIDASI & KONVERSI JAM
+    // ===============================================================
+
+    private boolean isValidJam(String input) {
+        input = input.trim().replace(".", ":");
+
+        return input.matches("\\d{1,2}")
+                || input.matches("\\d{1,2}:\\d{2}")
+                || input.matches("\\d{1,2}:\\d{2}:\\d{2}");
+    }
+
+    private String convertJam(String input) {
+        input = input.trim().replace(".", ":");
+
+        if (input.matches("\\d{1,2}")) {
+            return input + ":00:00";
+        }
+
+        if (input.matches("\\d{1,2}:\\d{2}")) {
+            return input + ":00";
+        }
+
+        return input; // sudah lengkap HH:MM:SS
+    }
+
     private void loadInstrukturCombo() {
         cbInstruktur.removeAllItems();
         for (Instruktur i : instrukturDAO.getAll()) {
@@ -116,10 +142,17 @@ public class FormJadwalKelas extends JFrame {
 
     private void saveData() {
         try {
+            // VALIDASI JAM
+            if (!isValidJam(txtJam.getText())) {
+                JOptionPane.showMessageDialog(this,
+                        "Format jam tidak valid!\nContoh: 12:00 atau 12.00 atau 12:30:00");
+                return;
+            }
+
             JadwalKelas j = new JadwalKelas();
             j.setNama_kelas(txtNama.getText());
             j.setHari(cbHari.getSelectedItem().toString());
-            j.setJam(txtJam.getText());
+            j.setJam(convertJam(txtJam.getText())); // FIX JAM
 
             ComboItem ins = (ComboItem) cbInstruktur.getSelectedItem();
             j.setId_instruktur(ins.getValue());
@@ -137,11 +170,18 @@ public class FormJadwalKelas extends JFrame {
         int row = table.getSelectedRow();
         if (row == -1) return;
 
+        // VALIDASI JAM
+        if (!isValidJam(txtJam.getText())) {
+            JOptionPane.showMessageDialog(this,
+                    "Format jam tidak valid!\nContoh: 12:00 atau 12.00 atau 12:30:00");
+            return;
+        }
+
         JadwalKelas j = new JadwalKelas();
         j.setId_kelas(Integer.parseInt(table.getValueAt(row, 0).toString()));
         j.setNama_kelas(txtNama.getText());
         j.setHari(cbHari.getSelectedItem().toString());
-        j.setJam(txtJam.getText());
+        j.setJam(convertJam(txtJam.getText())); // FIX JAM
 
         ComboItem ins = (ComboItem) cbInstruktur.getSelectedItem();
         j.setId_instruktur(ins.getValue());
