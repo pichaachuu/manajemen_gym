@@ -15,6 +15,6 @@ public class ComboItem {
 
     @Override
     public String toString() {
-        return key; // supaya yang tampil nama instruktur
+        return key;
     }
 }

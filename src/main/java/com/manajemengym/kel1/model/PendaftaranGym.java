@@ -1,11 +1,14 @@
 package com.manajemengym.kel1.model;
 
+import java.sql.Timestamp;
+
 public class PendaftaranGym {
     private int idPendaftaran;
-    private String member;
-    private String kelasGym;
-    private String tanggalDaftar;
+    private int id_member;
+    private int id_kelas;
+    private Timestamp tanggalDaftar;
     private String catatan;
+
 
     public int getIdPendaftaran() { 
         return idPendaftaran; 
@@ -15,27 +18,26 @@ public class PendaftaranGym {
         this.idPendaftaran = idPendaftaran; 
     }
 
-    public String getMember() { 
-        return member; 
+    public int getId_kelas() { 
+        return id_kelas; 
     }
 
-    public void setMember(String member) { 
-        this.member = member; 
+    public void setId_kelas(int id_kelas) { 
+        this.id_kelas = id_kelas; 
     }
 
-    public String getKelasGym() { 
-        return kelasGym; 
+    public int getId_member() { 
+        return id_member; 
     }
 
-    public void setKelasGym(String kelasGym) { 
-        this.kelasGym = kelasGym; 
+    public void setId_member(int id_member) { 
+        this.id_member = id_member; 
     }
-
-    public String getTanggalDaftar() { 
+    public Timestamp getTanggalDaftar() { 
         return tanggalDaftar; 
     }
 
-    public void setTanggalDaftar(String tanggalDaftar) { 
+    public void setTanggalDaftar(Timestamp tanggalDaftar) { 
         this.tanggalDaftar = tanggalDaftar; 
     }
 
@@ -46,4 +48,5 @@ public class PendaftaranGym {
     public void setCatatan(String catatan) { 
         this.catatan = catatan; 
     }
+
 }
