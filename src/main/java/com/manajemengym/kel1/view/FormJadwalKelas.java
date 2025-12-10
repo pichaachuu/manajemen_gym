@@ -141,34 +141,64 @@ public class FormJadwalKelas extends JFrame {
     }
 
     private void saveData() {
-        try {
-            // VALIDASI JAM
-            if (!isValidJam(txtJam.getText())) {
-                JOptionPane.showMessageDialog(this,
-                        "Format jam tidak valid!\nContoh: 12:00 atau 12.00 atau 12:30:00");
-                return;
-            }
-
-            JadwalKelas j = new JadwalKelas();
-            j.setNama_kelas(txtNama.getText());
-            j.setHari(cbHari.getSelectedItem().toString());
-            j.setJam(convertJam(txtJam.getText())); // FIX JAM
-
-            ComboItem ins = (ComboItem) cbInstruktur.getSelectedItem();
-            j.setId_instruktur(ins.getValue());
-
-            dao.insert(j);
-            loadData();
-            resetForm();
-            JOptionPane.showMessageDialog(this, "Data berhasil disimpan!");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Input tidak valid!");
+    try {
+        // VALIDASI NAMA KELAS
+        if (txtNama.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Nama kelas tidak boleh kosong!");
+            return;
         }
+
+        if (!txtNama.getText().matches("[a-zA-Z0-9 ]+")) {
+            JOptionPane.showMessageDialog(this,
+                    "Nama kelas hanya boleh huruf, angka, dan spasi!");
+            return;
+        }
+
+        // VALIDASI JAM
+        if (!isValidJam(txtJam.getText())) {
+            JOptionPane.showMessageDialog(this,
+                    "Format jam tidak valid!\nContoh: 12:00 atau 12.00 atau 12:30:00");
+            return;
+        }
+
+        JadwalKelas j = new JadwalKelas();
+        j.setNama_kelas(txtNama.getText());
+        j.setHari(cbHari.getSelectedItem().toString());
+        j.setJam(convertJam(txtJam.getText())); // FIX JAM
+
+        ComboItem ins = (ComboItem) cbInstruktur.getSelectedItem();
+        j.setId_instruktur(ins.getValue());
+
+        dao.insert(j);
+        loadData();
+        resetForm();
+        JOptionPane.showMessageDialog(this, "Data berhasil disimpan!");
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Input tidak valid!");
     }
+}
 
     private void updateData() {
+    try {
         int row = table.getSelectedRow();
-        if (row == -1) return;
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih data terlebih dahulu!");
+            return;
+        }
+
+        // VALIDASI NAMA
+        if (txtNama.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nama kelas tidak boleh kosong!");
+            return;
+        }
+
+        if (!txtNama.getText().matches("[a-zA-Z0-9 ]+")) {
+            JOptionPane.showMessageDialog(this,
+                    "Nama kelas hanya boleh huruf, angka, dan spasi!");
+            return;
+        }
 
         // VALIDASI JAM
         if (!isValidJam(txtJam.getText())) {
@@ -181,15 +211,23 @@ public class FormJadwalKelas extends JFrame {
         j.setId_kelas(Integer.parseInt(table.getValueAt(row, 0).toString()));
         j.setNama_kelas(txtNama.getText());
         j.setHari(cbHari.getSelectedItem().toString());
-        j.setJam(convertJam(txtJam.getText())); // FIX JAM
+        j.setJam(convertJam(txtJam.getText()));
 
         ComboItem ins = (ComboItem) cbInstruktur.getSelectedItem();
         j.setId_instruktur(ins.getValue());
 
         dao.update(j);
         loadData();
+
         JOptionPane.showMessageDialog(this, "Data diperbarui!");
+
+    } catch (IllegalArgumentException ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage());
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
     }
+}
+
 
     private void deleteData() {
         int row = table.getSelectedRow();
