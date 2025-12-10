@@ -1,181 +1,199 @@
 package com.manajemengym.kel1.view;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.sql.Timestamp;
 
 import com.manajemengym.kel1.dao.PendaftaranGymDAO;
+import com.manajemengym.kel1.dao.JadwalKelasDAO;
+import com.manajemengym.kel1.dao.MemberDAO;
 import com.manajemengym.kel1.model.PendaftaranGym;
+import com.manajemengym.kel1.model.ComboItem;
+import com.manajemengym.kel1.model.JadwalKelas;
+import com.manajemengym.kel1.model.Member;
 
-public class FormPendaftaranGym extends JFrame {
+public class FormPendaftaranGym extends JFrame{
+    
+    private JComboBox<ComboItem> cbMember;
+    private JComboBox<ComboItem> cbKelas;
+    private JTextField txtTglDaftar;
+    private JTextArea txtCatatan;
+    private JTable table;
+    private DefaultTableModel tableModel;
 
-    JTextField txtId, txtMember, txtKelas, txtTanggal, txtCatatan;
-    JTable table;
-    DefaultTableModel model;
+    private PendaftaranGymDAO dao = new PendaftaranGymDAO();
+    private JadwalKelasDAO kelasDAO = new JadwalKelasDAO();
+    private MemberDAO memberDAO = new MemberDAO();
 
     public FormPendaftaranGym() {
-        setTitle("Form Pendaftaran Gym");
-        setSize(700, 420);
-        setLayout(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Form Pendaftaran");
+        setSize(800, 500);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
 
-        JLabel lblMember = new JLabel("Member:");
-        lblMember.setBounds(20, 20, 120, 25);
-        add(lblMember);
+        JPanel panelInput = new JPanel(new GridLayout(4, 2, 10, 10));
+        panelInput.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        txtMember = new JTextField();
-        txtMember.setBounds(150, 20, 200, 25);
-        add(txtMember);
+        panelInput.add(new JLabel("Member:"));
+        cbMember = new JComboBox<>();
+        panelInput.add(cbMember);
 
-        JLabel lblKelas = new JLabel("Kelas Gym:");
-        lblKelas.setBounds(20, 60, 120, 25);
-        add(lblKelas);
+        loadMemberCombo();
 
-        txtKelas = new JTextField();
-        txtKelas.setBounds(150, 60, 200, 25);
-        add(txtKelas);
+        panelInput.add(new JLabel("Kelas:"));
+        cbKelas = new JComboBox<>();
+        panelInput.add(cbKelas);
 
-        JLabel lblTanggal = new JLabel("Tanggal Daftar:");
-        lblTanggal.setBounds(20, 100, 120, 25);
-        add(lblTanggal);
+        loadKelasCombo();
 
-        txtTanggal = new JTextField();
-        txtTanggal.setBounds(150, 100, 200, 25);
-        add(txtTanggal);
+        panelInput.add(new JLabel("Tanggal Daftar:"));
+        txtTglDaftar = new JTextField();
+        panelInput.add(txtTglDaftar);
 
-        JLabel lblCatatan = new JLabel("Catatan:");
-        lblCatatan.setBounds(20, 140, 120, 25);
-        add(lblCatatan);
+        panelInput.add(new JLabel("Catatan:"));
+        txtCatatan = new JTextArea(3, 20);
+        panelInput.add(txtCatatan);
 
-        txtCatatan = new JTextField();
-        txtCatatan.setBounds(150, 140, 200, 25);
-        add(txtCatatan);
-
-        JButton btnSimpan = new JButton("Save");
-        btnSimpan.setBounds(20, 190, 90, 30);
-        add(btnSimpan);
-
+        JPanel panelBtn = new JPanel(new FlowLayout());
+        JButton btnSave = new JButton("Save");
+        JButton btnUpdate = new JButton("Update");
         JButton btnDelete = new JButton("Delete");
-        btnDelete.setBounds(120, 190, 90, 30);
-        add(btnDelete);
-
         JButton btnReset = new JButton("Reset");
-        btnReset.setBounds(220, 190, 90, 30);
-        add(btnReset);
 
-        // TABEL
-        model = new DefaultTableModel();
-        model.addColumn("ID");   
-        model.addColumn("Member");
-        model.addColumn("Kelas Gym");
-        model.addColumn("Tanggal Daftar");
-        model.addColumn("Catatan");
+        panelBtn.add(btnSave);
+        panelBtn.add(btnUpdate);
+        panelBtn.add(btnDelete);
+        panelBtn.add(btnReset);
 
-        table = new JTable(model);
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setBounds(20, 230, 650, 150);
-        add(scroll);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(panelInput, BorderLayout.NORTH);
+        topPanel.add(panelBtn, BorderLayout.CENTER);
 
-        loadTable();
+        add(topPanel, BorderLayout.NORTH);
 
-        // --- ACTION SIMPAN ---
-        btnSimpan.addActionListener(e -> simpanData());
+        // ================= TABLE =================
+        tableModel = new DefaultTableModel(
+                new String[]{"ID", "Member", "Kelas", "Tanggal Daftar", "Catatan"}, 0
+        );
+        table = new JTable(tableModel);
+        loadData();
 
-        // --- ACTION DELETE ---
-        btnDelete.addActionListener(e -> deleteData());
+        add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // --- ACTION RESET ---
-        btnReset.addActionListener(e -> resetForm());
+        // ================= AKSI =================
+        btnSave.addActionListener((ActionEvent e) -> saveData());
+        btnUpdate.addActionListener((ActionEvent e) -> updateData());
+        btnDelete.addActionListener((ActionEvent e) -> deleteData());
+        btnReset.addActionListener((ActionEvent e) -> resetForm());
 
-        // --- TABLE CLICK ---
-        table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                int row = table.getSelectedRow();
-                txtId.setText(model.getValueAt(row, 0).toString());
-                txtMember.setText(model.getValueAt(row, 1).toString());
-                txtKelas.setText(model.getValueAt(row, 2).toString());
-                txtTanggal.setText(model.getValueAt(row, 3).toString());
-                txtCatatan.setText(model.getValueAt(row, 4).toString());
-            }
-        });
+        table.getSelectionModel().addListSelectionListener(e -> loadToForm());
 
         setVisible(true);
     }
 
-    // ================ METHOD CRUD ================
-
-    private void loadTable() {
-        try {
-            PendaftaranGymDAO dao = new PendaftaranGymDAO();
-            List<PendaftaranGym> list = dao.getAll();
-
-            model.setRowCount(0);
-
-            for (PendaftaranGym p : list) {
-                model.addRow(new Object[]{
-                        p.getIdPendaftaran(),  
-                        p.getMember(),
-                        p.getKelasGym(),
-                        p.getTanggalDaftar(),
-                        p.getCatatan()
-                });
-            }
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+    private void loadMemberCombo() {
+        cbMember.removeAllItems();
+        for (Member m : memberDAO.getAll()) {
+            cbMember.addItem(new ComboItem(m.getNama(), m.getIdMember()));
         }
     }
 
-    private void simpanData() {
+    private void loadKelasCombo(){
+        cbKelas.removeAllItems();
+        for (JadwalKelas k : kelasDAO.getAll()) {
+            cbKelas.addItem(new ComboItem(k.getNama_kelas(), k.getId_kelas()));
+        }
+    }
+
+    private void loadData() {
+        tableModel.setRowCount(0);
+        List<PendaftaranGym> list = dao.getAll();
+
+        for (PendaftaranGym  p: list) {
+            tableModel.addRow(new Object[]{
+                p.getIdPendaftaran(),
+                p.getId_member(),
+                p.getId_kelas(),
+                p.getTanggalDaftar(),
+                p.getCatatan()
+            });
+        }
+    }
+
+    private void saveData() {
         try {
             PendaftaranGym p = new PendaftaranGym();
-            p.setMember(txtMember.getText());
-            p.setKelasGym(txtKelas.getText());
-            p.setTanggalDaftar(txtTanggal.getText());
+            ComboItem mem = (ComboItem) cbMember.getSelectedItem();
+            p.setId_member(mem.getValue());
+            ComboItem kls = (ComboItem) cbKelas.getSelectedItem();
+            p.setId_kelas(kls.getValue());
+            p.setTanggalDaftar(Timestamp.valueOf(LocalDateTime.now()));
             p.setCatatan(txtCatatan.getText());
+            
 
-            new PendaftaranGymDAO().insert(p);
-            JOptionPane.showMessageDialog(this, "Data berhasil disimpan!");
-
-            loadTable();
+            dao.insert(p);
+            loadData();
             resetForm();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+            JOptionPane.showMessageDialog(this, "Data berhasil disimpan!");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Input tidak valid!");
         }
     }
+
+    private void updateData() {
+        int row = table.getSelectedRow();
+        if (row == -1) return;
+
+        PendaftaranGym p = new PendaftaranGym();
+        p.setIdPendaftaran(Integer.parseInt(table.getValueAt(row, 0).toString()));
+
+        ComboItem mem = (ComboItem) cbMember.getSelectedItem();
+        p.setId_member(mem.getValue());
+
+        ComboItem kls = (ComboItem) cbKelas.getSelectedItem();
+        p.setId_kelas(kls.getValue());
+
+        // TIMESTAMP JUGA
+        p.setTanggalDaftar(Timestamp.valueOf(LocalDateTime.now()));
+
+        p.setCatatan(txtCatatan.getText());
+
+        dao.update(p);
+        loadData();
+        JOptionPane.showMessageDialog(this, "Data diperbarui!");
+    }
+
 
     private void deleteData() {
-        if (txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Pilih data yang ingin dihapus!");
-            return;
-        }
+        int row = table.getSelectedRow();
+        if (row == -1) return;
 
-        try {
-            int id = Integer.parseInt(txtId.getText());
-            new PendaftaranGymDAO().delete(id);
-
-            JOptionPane.showMessageDialog(this, "Data berhasil dihapus!");
-            loadTable();
-            resetForm();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
-        }
+        int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+        dao.delete(id);
+        loadData();
+        resetForm();
+        JOptionPane.showMessageDialog(this, "Data dihapus!");
     }
-
+    
     private void resetForm() {
-        txtMember.setText("");
-        txtKelas.setText("");
-        txtTanggal.setText("");
+        if (cbMember.getItemCount() > 0) cbMember.setSelectedIndex(0);
+        if (cbKelas.getItemCount() > 0) cbKelas.setSelectedIndex(0);
+        txtTglDaftar.setText("");
         txtCatatan.setText("");
     }
+
+    private void loadToForm() {
+        int row = table.getSelectedRow();
+        if (row == -1) return;
+
+        txtTglDaftar.setText(table.getValueAt(row, 3).toString());
+        txtCatatan.setText(table.getValueAt(row, 4).toString());
+    }    
+    
 }
+

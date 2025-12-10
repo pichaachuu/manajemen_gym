@@ -100,10 +100,42 @@ public class FormMember extends JFrame {
     // ✦ FUNGSI SIMPAN ✦
     private void saveMember() {
         try {
+            // VALIDASI DASAR DI VIEW (UI)
+            if (txtNama.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Nama tidak boleh kosong!");
+                return;
+            }
+
+            if (txtUsia.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Usia tidak boleh kosong!");
+                return;
+            }
+
+            if (!txtUsia.getText().matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "Usia harus angka!");
+                return;
+            }
+
+            if (txtTelepon.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Nomor telepon tidak boleh kosong!");
+                return;
+            }
+
+            if (!txtTelepon.getText().matches("\\+?\\d{10,13}")) {
+                JOptionPane.showMessageDialog(this, "Format nomor telepon tidak valid!");
+                return;
+            }
+
+            if (txtAlamat.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Alamat tidak boleh kosong!");
+                return;
+            }
+
+            // Jika lolos UI validation → masukkan ke model
             Member m = new Member();
             m.setNama(txtNama.getText());
             m.setGender(cbGender.getSelectedItem().toString());
-            m.setUsia(Integer.parseInt(txtUsia.getText()));
+            m.setUsia(Integer.parseInt(txtUsia.getText()));  // Model akan validasi ulang
             m.setTelepon(txtTelepon.getText());
             m.setAlamat(txtAlamat.getText());
 
@@ -111,28 +143,57 @@ public class FormMember extends JFrame {
             loadTable();
             resetForm();
             JOptionPane.showMessageDialog(this, "Data berhasil disimpan!");
+
+        } catch (IllegalArgumentException ex) {
+            // Pesan validasi dari Model
+            JOptionPane.showMessageDialog(this, ex.getMessage());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Input tidak valid!");
+            JOptionPane.showMessageDialog(this, "Terjadi kesalahan: " + ex.getMessage());
         }
     }
 
+
     // ✦ FUNGSI UPDATE ✦
     private void updateMember() {
-        int row = table.getSelectedRow();
-        if (row == -1) return;
+        try {
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Pilih data terlebih dahulu!");
+                return;
+            }
 
-        Member m = new Member();
-        m.setIdMember(Integer.parseInt(table.getValueAt(row, 0).toString()));
-        m.setNama(txtNama.getText());
-        m.setGender(cbGender.getSelectedItem().toString());
-        m.setUsia(Integer.parseInt(txtUsia.getText()));
-        m.setTelepon(txtTelepon.getText());
-        m.setAlamat(txtAlamat.getText());
+            if (txtNama.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Nama tidak boleh kosong!");
+                return;
+            }
 
-        memberDAO.update(m);
-        loadTable();
-        JOptionPane.showMessageDialog(this, "Data berhasil diperbarui!");
+            if (!txtUsia.getText().matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "Usia harus angka!");
+                return;
+            }
+
+            if (!txtTelepon.getText().matches("\\+?\\d{10,13}")) {
+                JOptionPane.showMessageDialog(this, "Format nomor telepon tidak valid!");
+                return;
+            }
+
+            Member m = new Member();
+            m.setIdMember(Integer.parseInt(table.getValueAt(row, 0).toString()));
+            m.setNama(txtNama.getText());
+            m.setGender(cbGender.getSelectedItem().toString());
+            m.setUsia(Integer.parseInt(txtUsia.getText()));
+            m.setTelepon(txtTelepon.getText());
+            m.setAlamat(txtAlamat.getText());
+
+            memberDAO.update(m);
+            loadTable();
+            JOptionPane.showMessageDialog(this, "Data berhasil diperbarui!");
+
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
     }
+
 
     // ✦ FUNGSI DELETE ✦
     private void deleteMember() {

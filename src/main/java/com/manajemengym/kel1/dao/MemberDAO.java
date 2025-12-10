@@ -14,7 +14,7 @@ public class MemberDAO {
         String sql = "INSERT INTO member_gym (nama, gender, usia, telepon, alamat) VALUES (?, ?, ?, ?, ?)";;
 
         try (Connection conn = Koneksi.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, m.getNama());
             ps.setString(2, m.getGender());
@@ -93,5 +93,32 @@ public class MemberDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Member> getAll() {
+        List<Member> list = new ArrayList<>();
+        String sql = "SELECT * FROM member_gym";
+
+        try (Connection conn = Koneksi.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Member m = new Member();
+                m.setIdMember(rs.getInt("id_member"));
+                m.setNama(rs.getString("nama"));
+                m.setGender(rs.getString("gender"));
+                m.setUsia(rs.getInt("usia"));
+                m.setTelepon(rs.getString("telepon"));
+                m.setAlamat(rs.getString("alamat"));
+
+                list.add(m);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 }
