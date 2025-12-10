@@ -1,3 +1,4 @@
+
 package com.manajemengym.kel1.view;
 
 import com.manajemengym.kel1.dao.InstrukturDAO;
@@ -5,107 +6,260 @@ import com.manajemengym.kel1.model.Instruktur;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class FormInstruktur extends JFrame {
 
-    private JTextField txtNama, txtUsia, txtKeahlian, txtTelpon;
-    private JButton btnSave, btnUpdate, btnDelete, btnReset;
+    private JTextField txtNama, txtUsia, txtKeahlian, txtTelepon;
     private JTable table;
-    private DefaultTableModel model;
+    private DefaultTableModel tableModel;
 
     private InstrukturDAO dao = new InstrukturDAO();
 
     public FormInstruktur() {
-        setTitle("Form Instruktur");
-        setSize(800, 600);
+        setTitle("Form Instruktur Gym");
+        setSize(750, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(null);
+        setLayout(new BorderLayout());
 
-        // =================== LABEL ===================
-        JLabel l2 = new JLabel("Nama:");
-        l2.setBounds(20, 20, 120, 25);
-        add(l2);
+        // ===================== PANEL INPUT =====================
+        JPanel panelInput = new JPanel(new GridLayout(4, 2, 10, 10));
+        panelInput.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        panelInput.add(new JLabel("Nama:"));
         txtNama = new JTextField();
-        txtNama.setBounds(130, 20, 200, 25);
-        add(txtNama);
+        panelInput.add(txtNama);
 
-        JLabel l3 = new JLabel("Usia:");
-        l3.setBounds(20, 60, 120, 25);
-        add(l3);
-
+        panelInput.add(new JLabel("Usia:"));
         txtUsia = new JTextField();
-        txtUsia.setBounds(130, 60, 200, 25);
-        add(txtUsia);
+        panelInput.add(txtUsia);
 
-        JLabel l4 = new JLabel("Keahlian:");
-        l4.setBounds(20, 100, 120, 25);
-        add(l4);
-
+        panelInput.add(new JLabel("Keahlian:"));
         txtKeahlian = new JTextField();
-        txtKeahlian.setBounds(130, 100, 200, 25);
-        add(txtKeahlian);
+        panelInput.add(txtKeahlian);
 
-        JLabel l5 = new JLabel("Telepon:");
-        l5.setBounds(20, 140, 120, 25);
-        add(l5);
+        panelInput.add(new JLabel("Telepon:"));
+        txtTelepon = new JTextField();
+        panelInput.add(txtTelepon);
 
-        txtTelpon = new JTextField();
-        txtTelpon.setBounds(130, 140, 200, 25);
-        add(txtTelpon);
+        // ===================== PANEL TOMBOL =====================
+        JPanel panelBtn = new JPanel(new FlowLayout());
 
-        // =================== BUTTON ===================
-        btnSave = new JButton("Save");
-        btnSave.setBounds(20, 190, 80, 30);
-        add(btnSave);
+        JButton btnSave = new JButton("Save");
+        JButton btnUpdate = new JButton("Update");
+        JButton btnDelete = new JButton("Delete");
+        JButton btnReset = new JButton("Reset");
 
-        btnUpdate = new JButton("Update");
-        btnUpdate.setBounds(110, 190, 80, 30);
-        add(btnUpdate);
+        panelBtn.add(btnSave);
+        panelBtn.add(btnUpdate);
+        panelBtn.add(btnDelete);
+        panelBtn.add(btnReset);
 
-        btnDelete = new JButton("Delete");
-        btnDelete.setBounds(200, 190, 80, 30);
-        add(btnDelete);
+        // Gabungkan input + tombol
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(panelInput, BorderLayout.CENTER);
+        topPanel.add(panelBtn, BorderLayout.SOUTH);
 
-        btnReset = new JButton("Reset");
-        btnReset.setBounds(290, 190, 80, 30);
-        add(btnReset);
+        add(topPanel, BorderLayout.NORTH);
 
-        // =================== TABLE ===================
-        model = new DefaultTableModel(new String[]{"ID", "Nama", "Usia", "Keahlian", "Telepon"}, 0);
-        table = new JTable(model);
-        JScrollPane sp = new JScrollPane(table);
-        sp.setBounds(20, 250, 750, 280);
-        add(sp);
+        // ===================== TABLE =====================
+        tableModel = new DefaultTableModel(
+                new String[]{"ID", "Nama", "Usia", "Keahlian", "Telepon"}, 0
+        );
+        table = new JTable(tableModel);
+        add(new JScrollPane(table), BorderLayout.CENTER);
 
-        loadData();
+        loadTable();
 
-        // =================== EVENT ===================
-        btnSave.addActionListener(e -> saveData());
-        btnUpdate.addActionListener(e -> updateData());
-        btnDelete.addActionListener(e -> deleteData());
+        // ===================== EVENT =====================
+        btnSave.addActionListener(e -> saveInstruktur());
+        btnUpdate.addActionListener(e -> updateInstruktur());
+        btnDelete.addActionListener(e -> deleteInstruktur());
         btnReset.addActionListener(e -> resetForm());
 
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                fillFormFromTable();
+                loadFormFromTable();
             }
         });
 
         setVisible(true);
     }
 
-    // =================== METHODS ===================
+    // ===================== SAVE =====================
+    private void saveInstruktur() {
+    try {
+        // VALIDASI NAMA
+        if (txtNama.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nama tidak boleh kosong!");
+            return;
+        }
 
-    private void loadData() {
-        model.setRowCount(0);
+        if (!txtNama.getText().matches("[a-zA-Z ]+")) {
+            JOptionPane.showMessageDialog(this, "Nama hanya boleh huruf dan spasi!");
+            return;
+        }
+
+        // VALIDASI USIA
+        if (txtUsia.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Usia tidak boleh kosong!");
+            return;
+        }
+
+        if (!txtUsia.getText().matches("\\d+")) {
+            JOptionPane.showMessageDialog(this, "Usia harus angka!");
+            return;
+        }
+
+        int usia = Integer.parseInt(txtUsia.getText());
+
+        // Jika <12 → TETAP lanjut tapi kasih pesan, setter akan set ke 12
+        if (usia < 12) {
+            JOptionPane.showMessageDialog(this, "Usia terlalu kecil, otomatis diset menjadi 12.");
+        }
+
+        // VALIDASI KEAHLIAN
+        if (txtKeahlian.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Keahlian tidak boleh kosong!");
+            return;
+        }
+
+        // VALIDASI TELEPON
+        if (txtTelepon.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Telepon tidak boleh kosong!");
+            return;
+        }
+
+        if (!txtTelepon.getText().matches("\\+?\\d{10,13}")) {
+            JOptionPane.showMessageDialog(this, "Format nomor telepon tidak valid!");
+            return;
+        }
+
+        // MASUKKAN KE MODEL
+        Instruktur ins = new Instruktur();
+        ins.setNama(txtNama.getText());
+        ins.setUsia(usia); // setter akan auto-set 12
+        ins.setKeahlian(txtKeahlian.getText());
+        ins.setTelepon(txtTelepon.getText());
+
+        dao.insert(ins);
+        loadTable();
+        resetForm();
+        JOptionPane.showMessageDialog(this, "Instruktur berhasil disimpan!");
+
+    } catch (IllegalArgumentException ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage());
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+    }
+}
+
+
+    // ===================== UPDATE =====================
+    private void updateInstruktur() {
+    try {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih data terlebih dahulu!");
+            return;
+        }
+
+        // VALIDASI NAMA
+        if (txtNama.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nama tidak boleh kosong!");
+            return;
+        }
+
+        if (!txtNama.getText().matches("[a-zA-Z ]+")) {
+            JOptionPane.showMessageDialog(this, "Nama hanya boleh huruf dan spasi!");
+            return;
+        }
+
+        // VALIDASI USIA
+        if (txtUsia.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Usia tidak boleh kosong!");
+            return;
+        }
+
+        if (!txtUsia.getText().matches("\\d+")) {
+            JOptionPane.showMessageDialog(this, "Usia harus angka!");
+            return;
+        }
+
+        int usia = Integer.parseInt(txtUsia.getText());
+
+        if (usia < 12) {
+            JOptionPane.showMessageDialog(this, "Usia terlalu kecil, otomatis diset menjadi 12.");
+        }
+
+        // VALIDASI KEAHLIAN
+        if (txtKeahlian.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Keahlian tidak boleh kosong!");
+            return;
+        }
+
+        // VALIDASI TELEPON
+        if (txtTelepon.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Telepon tidak boleh kosong!");
+            return;
+        }
+
+        if (!txtTelepon.getText().matches("\\+?\\d{10,13}")) {
+            JOptionPane.showMessageDialog(this, "Format nomor telepon tidak valid!");
+            return;
+        }
+
+        // MASUKKAN KE MODEL
+        int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+
+        Instruktur ins = new Instruktur();
+        ins.setId_instruktur(id);
+        ins.setNama(txtNama.getText());
+        ins.setUsia(usia); // setter tetap auto-set
+        ins.setKeahlian(txtKeahlian.getText());
+        ins.setTelepon(txtTelepon.getText());
+
+        dao.update(ins);
+
+        loadTable();
+        JOptionPane.showMessageDialog(this, "Data berhasil diperbarui!");
+
+    } catch (IllegalArgumentException ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage());
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+    }
+}
+
+
+
+    // ===================== DELETE =====================
+    private void deleteInstruktur() {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih data terlebih dahulu!");
+            return;
+        }
+
+        int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+        dao.delete(id);
+
+        loadTable();
+        resetForm();
+        JOptionPane.showMessageDialog(this, "Data berhasil dihapus!");
+    }
+
+    // ===================== LOAD TABEL =====================
+    private void loadTable() {
+        tableModel.setRowCount(0);
+
         List<Instruktur> list = dao.getAll();
-
         for (Instruktur ins : list) {
-            model.addRow(new Object[]{
+            tableModel.addRow(new Object[]{
                     ins.getId_instruktur(),
                     ins.getNama(),
                     ins.getUsia(),
@@ -115,74 +269,26 @@ public class FormInstruktur extends JFrame {
         }
     }
 
-    private void saveData() {
-        if (txtNama.getText().isEmpty() || txtUsia.getText().isEmpty() ||
-            txtKeahlian.getText().isEmpty() || txtTelpon.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Semua field wajib diisi!");
-            return;
-        }
-
-        Instruktur ins = new Instruktur();
-        ins.setNama(txtNama.getText());
-        ins.setUsia(Integer.parseInt(txtUsia.getText()));
-        ins.setKeahlian(txtKeahlian.getText());
-        ins.setTelepon(txtTelpon.getText());
-
-        dao.insert(ins);
-        loadData();
-        resetForm();
-    }
-
-    private void updateData() {
-        int row = table.getSelectedRow();
-
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih data dari tabel dulu!");
-            return;
-        }
-
-        int id = Integer.parseInt(model.getValueAt(row, 0).toString());
-
-        Instruktur ins = new Instruktur();
-        ins.setId_instruktur(id);
-        ins.setNama(txtNama.getText());
-        ins.setUsia(Integer.parseInt(txtUsia.getText()));
-        ins.setKeahlian(txtKeahlian.getText());
-        ins.setTelepon(txtTelpon.getText());
-
-        dao.update(ins);
-        loadData();
-        resetForm();
-    }
-
-    private void deleteData() {
-        int row = table.getSelectedRow();
-
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih data dulu!");
-            return;
-        }
-
-        int id = Integer.parseInt(model.getValueAt(row, 0).toString());
-        dao.delete(id);
-
-        loadData();
-        resetForm();
-    }
-
+    // ===================== RESET =====================
     private void resetForm() {
         txtNama.setText("");
         txtUsia.setText("");
         txtKeahlian.setText("");
-        txtTelpon.setText("");
+        txtTelepon.setText("");
     }
 
-    private void fillFormFromTable() {
+    // ===================== TABLE → FORM =====================
+    private void loadFormFromTable() {
         int row = table.getSelectedRow();
+        if (row == -1) return;
 
-        txtNama.setText(model.getValueAt(row, 1).toString());
-        txtUsia.setText(model.getValueAt(row, 2).toString());
-        txtKeahlian.setText(model.getValueAt(row, 3).toString());
-        txtTelpon.setText(model.getValueAt(row, 4).toString());
+        txtNama.setText(table.getValueAt(row, 1).toString());
+        txtUsia.setText(table.getValueAt(row, 2).toString());
+        txtKeahlian.setText(table.getValueAt(row, 3).toString());
+        txtTelepon.setText(table.getValueAt(row, 4).toString());
+    }
+
+    public static void main(String[] args) {
+        new FormInstruktur();
     }
 }

@@ -29,6 +29,8 @@ public class FormPendaftaranGym extends JFrame{
     private JadwalKelasDAO kelasDAO = new JadwalKelasDAO();
     private MemberDAO memberDAO = new MemberDAO();
 
+    private int selectedId = -1;
+
     public FormPendaftaranGym() {
         setTitle("Form Pendaftaran");
         setSize(800, 500);
@@ -185,6 +187,7 @@ public class FormPendaftaranGym extends JFrame{
         if (cbKelas.getItemCount() > 0) cbKelas.setSelectedIndex(0);
         txtTglDaftar.setText("");
         txtCatatan.setText("");
+        table.clearSelection();
     }
 
     private void loadToForm() {
