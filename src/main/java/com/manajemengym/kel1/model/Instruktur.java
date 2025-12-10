@@ -45,11 +45,12 @@ public class Instruktur {
     }
     public void setUsia(int usia) {
         if (usia < 12) {
-            System.out.println("⚠️ Usia instruktur terlalu kecil, otomatis diset menjadi 12.");
-            this.usia = 12;
-        } else {
-            this.usia = usia;
+            throw new IllegalArgumentException("Usia terlalu kecil");
         }
+        if (usia > 60) {
+            throw new IllegalArgumentException("Usia terlalu tua");
+        }
+        this.usia = usia;
     }
 
     public String getKeahlian() {
