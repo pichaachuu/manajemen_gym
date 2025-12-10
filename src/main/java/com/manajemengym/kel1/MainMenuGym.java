@@ -52,8 +52,6 @@ public class MainMenuGym {
             btnKeluar.setBounds(startX, startY + spacing * 4, btnWidth, btnHeight);
             frame.add(btnKeluar);
 
-            // ================= ACTION =================
-
             btnMember.addActionListener(e ->
                 new FormMember().setVisible(true)
             );
